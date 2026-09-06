@@ -1,0 +1,45 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #202020;
+  background: #f6f5f1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  width: min(100% - 32px, 480px);
+  margin: 64px auto;
+}
+
+form {
+  display: grid;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+input,
+button {
+  width: 100%;
+  padding: 12px;
+  font: inherit;
+  border: 1px solid #888;
+  border-radius: 8px;
+}
+
+button {
+  margin-top: 12px;
+  background: #202020;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
