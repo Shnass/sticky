@@ -1,5 +1,5 @@
 import express from 'express';
-import { getCollection, getRelease } from './discogs.ts';
+import { getAllCollectionItems, getRelease, getReleasesIds } from './discogs.ts';
 
 const app = express();
 const port = 3000;
@@ -69,9 +69,9 @@ app.post('/api/jobs', async(req, res) => {
 
 try {
 const userName = decodeURIComponent(getUserName(url.pathname));
-const collection = await getCollection(userName, token.trim());
+const collection = await getAllCollectionItems(userName, token.trim());
 
-const firstItem = collection.releases[0];
+const firstItem = collection.items[0];
 
 if (!firstItem) {
   res.json({
@@ -88,7 +88,7 @@ const releaseDetails = await getRelease(releaseId, token.trim());
 
 res.json({
   message: `Отримано колекцію та деталі релізу «${releaseDetails.title}».`,
-  releases: collection.releases,
+  releases: collection.items,
   pagination: collection.pagination,
   releaseDetails,
 });
