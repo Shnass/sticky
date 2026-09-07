@@ -1,12 +1,13 @@
-import { setTimeout as delay } from 'node:timers/promises';
 import { DiscogsRelease, DiscogsCollectionPage, DiscogsCollectionItem } from "./discogs.t";
+import { discogsRequest } from "./discogs-request";
+
 
 export async function getCollectionPage(userName: string, token: string, page: number):Promise<DiscogsCollectionPage> {
   const url = new URL(
     `https://api.discogs.com/users/${encodeURIComponent(userName)}/collection/folders/0/releases`,
   );
 
-  url.searchParams.set('page', '1');
+  url.searchParams.set('page', String(page));
   url.searchParams.set('per_page', '100');
 
   return discogsRequest(url, token);
@@ -38,28 +39,34 @@ export async function getRelease(releaseId: number, token: string):Promise<Disco
   return discogsRequest(url, token);
 }
 
-async function discogsRequest(url: URL, token: string){
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Discogs token=${token}`,
-      'User-Agent': 'STICKYICKY/0.1',
-      Accept: 'application/json',
-    },
-    signal: AbortSignal.timeout(15_000),
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Помилка Discogs API: ${response.status} (${url.pathname}).`,
-    );
-  }
-
-  return response.json();
-}
-
 export function getReleasesIds(items:DiscogsCollectionItem[]):number[]{
     const ids = [...new Set(
         items.map(item => item.basic_information.id)
     )]
     return ids;
+}
+
+export async function getReleaseDetails(
+  releaseIds: number[],
+  token: string,
+) {
+  const releases: DiscogsRelease[] = [];
+  const errors: { releaseId: number; message: string }[] = [];
+
+  for (const releaseId of releaseIds) {
+    try {
+      const release = await getRelease(releaseId, token);
+      releases.push(release);
+    } catch (error) {
+      errors.push({
+        releaseId,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Не вдалося отримати реліз.',
+      });
+    }
+  }
+
+  return { releases, errors };
 }

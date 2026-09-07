@@ -1,5 +1,6 @@
 import express from 'express';
-import { getAllCollectionItems, getRelease, getReleasesIds } from './discogs.ts';
+import { getAllCollectionItems, getRelease, getReleasesIds, getReleaseDetails } from './discogs.ts';
+import { DiscogsRelease } from './discogs.t.ts';
 
 const app = express();
 const port = 3000;
@@ -83,15 +84,19 @@ if (!firstItem) {
   return;
 }
 
-const releaseId = firstItem.basic_information.id;
-const releaseDetails = await getRelease(releaseId, token.trim());
+const releaseIds = getReleasesIds(collection.items);
+
+const result = await getReleaseDetails(
+  releaseIds.slice(0, 3),
+  token.trim(),
+);
 
 res.json({
-  message: `Отримано колекцію та деталі релізу «${releaseDetails.title}».`,
-  releases: collection.items,
-  pagination: collection.pagination,
-  releaseDetails,
+  message: `Отримано ${result.releases.length} релізів. Помилок: ${result.errors.length}.`,
+  releases: result.releases,
+  errors: result.errors,
 });
+
 } catch (error) {
   res.status(502).json({
     error:
